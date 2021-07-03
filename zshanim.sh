@@ -1,20 +1,20 @@
 #! /bin/zsh
 
-if [[ $1 = "--debug" ]]; then
+if [[ $1 == "--debug" ]]; then
   DEBUG=1;
 fi
 
-tSize=`stty size`
-if [[ "$?" > "0" ]]; then
+tSize="$(stty size)"
+if [[ $? -gt 0 ]]; then
   cols=40
   lines=16
 else
-  cols=${tSize#* }
-  lines=${tSize% *}
+  cols="$tSize#* "
+  lines="$tSize% *"
 fi
 
 hPad="  "
-vRepeat=$(( cols/4-1 ))
+vRepeat="$(( cols/4-1 ))"
 
 sky01="$hPad`printf '-   %.0s' {1..$vRepeat}`
 $hPad`printf '   -%.0s' {1..$vRepeat}`
@@ -49,9 +49,9 @@ nothing="$hPad`printf '    %.0s' {1..$vRepeat}`\n"
 head="$hPad`printf '(0/>' ``printf '    %.0s' {1..$((vRepeat-1))}`\n"
 body="$hPad`printf '(V| ' ``printf '    %.0s' {1..$((vRepeat-1))}`\n"
 feet="$hPad`printf 'UU  ' ``printf '    %.0s' {1..$((vRepeat-1))}`\n"
-street=$ground$nothing$nothing$nothing$nothing$nothing$ground
-filledSt=$ground$nothing$head$body$feet$nothing$ground
-vPad=$nothing
+street="$ground$nothing$nothing$nothing$nothing$nothing$ground"
+filledSt="$ground$nothing$head$body$feet$nothing$ground"
+vPad="$nothing"
 
 passiveFrames=(
   $vPad$sky01$street
@@ -74,29 +74,35 @@ gameRunning=0
 userInputDump=""
 
 function paintFrames() {
-  for frame in ${passiveFrames[@]}; do
+
+  for frame in "${passiveFrames[@]}"; do
     clear
-    echo $frame
-    if [[ $DEBUG = "1" ]]; then
+    echo "$frame"
+
+    if [[ $DEBUG == "1" ]]; then
       echo "  | Game paused: $gamePaused | Game over: $gameOver | Player spawned: $playerSpawned | Game running: $gameRunning |"
       echo "  | User input dump: $userInputDump |"
     fi
+
     while read -t 1 userInput; do
-      if [[ $userInput = "" ]]; then
+      if [[ -z $userInput ]]; then
         unset userInputDump
       else
         userInputDump="$userInputDump$userInput"
       fi
       handleUserInput "$userInputDump"
     done
+
   done
 }
 
 function handlePlayerCtrl() {
-  if [[ $gameRunning = "0" ]]; then
+
+  if [[ $gameRunning == 0 ]]; then
     gameRunning=1
   fi
-  if [[ $playerSpawned = "0" ]]; then
+
+  if [[ $playerSpawned == 0 ]]; then
     echo "PLAYERCTRL"
     spawnPlayer
     # populate play frames
@@ -104,30 +110,31 @@ function handlePlayerCtrl() {
 }
 
 function handleUserInput() {
+
   case $1 in
-    q | exit );
+    q|exit);
       gameOver=1
       break
       exit
       ;;
-    d );
-      if [[ $gamePaused = "1" ]]; then
+    d);
+      if [[ $gamePaused == 1 ]]; then
         unpauseGame
-      elif [[ $gameRunning = "0" ]]; then
+      elif [[ $gameRunning == 0 ]]; then
         handlePlayerCtrl
       else
         main
       fi
       ;;
-    p );
-      if [[ $gamePaused = "0" ]]; then
+    p);
+      if [[ $gamePaused == 0 ]]; then
         gamePaused=1
         break
-      elif [[ $gamePaused = "1" ]]; then
+      elif [[ $gamePaused == 1 ]]; then
         unpauseGame
       fi
       ;;
-    * );
+    *);
       unset userInputDump
   esac
 }
@@ -149,7 +156,7 @@ function gameOvered() {
   echo "GAME OVER"
   echo "Start new game? [y|n]"
   read userInput
-  if [[ $userInput = "y" ]] || [[ $userInput = "yes" ]]; then
+  if [[ $userInput == "y" || $userInput == "yes" ]]; then
     gamePaused=0
     gameOver=0
     gameRunning=0
@@ -172,16 +179,20 @@ function unspawnPlayer() {
 }
 
 function main() {
-  while [[ $gameOver = "0" ]] && [[ $gamePaused = "0" ]]; do
-      paintFrames
+
+  while [[ $gameOver == 0 && $gamePaused == 0 ]]; do
+    paintFrames
   done
-  while [[ $gamePaused = "1" ]]; do
-      pausedGame
+
+  while [[ $gamePaused == 1 ]]; do
+    pausedGame
   done
-  while [[ $gameOver = "1" ]]; do
-      gameOvered
+
+  while [[ $gameOver == 1 ]]; do
+    gameOvered
   done
+
+  main
 }
 
 main
-exit
