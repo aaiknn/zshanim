@@ -9,8 +9,8 @@ if [[ $? -gt 0 ]]; then
   cols=40
   lines=16
 else
-  cols="$tSize#* "
-  lines="$tSize% *"
+  cols="${tSize#* }"
+  lines="${tSize% *}"
 fi
 
 hPad="  "
